@@ -6,7 +6,7 @@ using System.Linq;
 public class Test : MonoBehaviour
 {
 
-    void Test()
+    void TestLoader()
     {
         WowMapLoader.WowMap.Keys.ToList().ForEach(map => {
             Debug.Log("map list (directory name) " + map + ","  +  WowMapLoader.WowMap[map].Keys.Count);
@@ -19,7 +19,7 @@ public class Test : MonoBehaviour
     }
     private void Start()
     {
-        Test();
+        TestLoader();
 
     }
 }
