@@ -81,9 +81,8 @@ public class WowMapLoader
         }
     }
 
-    public static TilePlacementDictionary GetMapData(string mapName) => WowMap[mapName];
-    
-
+    public static TilePlacementDictionary GetMapData(string mapName)
+        => WowMap[mapName]; 
 
 
     static List<PlaceProps> ParseRows(string raw)

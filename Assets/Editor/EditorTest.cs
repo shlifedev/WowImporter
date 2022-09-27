@@ -10,7 +10,6 @@ namespace Assets.Editor
     {
         void Test()
         {
-            WowMapLoader.
         }
     }
 }
