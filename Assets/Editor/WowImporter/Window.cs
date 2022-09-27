@@ -3,6 +3,17 @@ using UnityEditor;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+
+/*
+ * 이렇게 작동시키자.
+ * 0. ProjectPath/Exporter 경로에 Wow Exporter 구성요소가 있는지 확인
+ * 1. 없는경우 github 에 다운로드요청 -> modifier node에 api 통신용 코드 주입)
+ * 1-2. 있는경우 패스, 인젝션 필요없음
+ * 2. Run Unity -> Wow Exporter
+ * 3. Reg Process Info to Unity, and Wow Exporter Open Local Server 
+ */
+
+
 namespace Assets.Editor.WowImporter
 {
     public enum API
@@ -31,7 +42,7 @@ namespace Assets.Editor.WowImporter
             using (var request = new UnityEngine.Networking.UnityWebRequest("url", "POST"))
             {
                 request.uploadHandler = NetworkingHelper.CreateUploadHandler("");
-                request.downloadHandler = NetworkingHelper.CreateDownloadHandler();
+                request.downloadHandler = NetworkingHelper.CreateDownloadHandler(); 
                 return request;
             }
         }
