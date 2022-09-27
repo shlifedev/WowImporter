@@ -14,56 +14,66 @@ public class WowMapLoader
         public string FileDataId;
         public int DoodadIndexes;
         public int DoodadSetName;
-    }
-    public class PlacementMap : Dictionary<string, List<PlaceProps>> { }
-
+    } 
+    public class TilePlacementDictionary : Dictionary<string, List<PlaceProps>> { }
+    public class WowMapDictionary : Dictionary<string, TilePlacementDictionary>{ }
+   
     const int WOW_MAX_SIZE = 51200 / 3;
     const int MAP_SIZE = WOW_MAX_SIZE * 2;
-    const int ADT_SIZE = WOW_MAX_SIZE / 64; 
+    const int ADT_SIZE = WOW_MAX_SIZE / 6; 
+    const string BASE_PATH = "Assets/wow/maps/";
 
-    private static List<string> cache;
-    public static List<string> PlacementPaths
+
+    static DirectoryInfo Dir => new DirectoryInfo(BASE_PATH); 
+
+    static List<string> MapNames
     {
         get
         {
-            if (cache == null) cache = FindAllPlacementPaths();
-            return cache;
+            return Dir.GetDirectories().Select(x => x.Name).ToList();
         }
     }
-    private static PlacementMap mapCache;
-    public static PlacementMap PlacementPropMap
+    public static List<string> TileNames => WowMap.Keys.ToList();
+    private static WowMapDictionary mapCache;
+    public static WowMapDictionary WowMap
     {
         get
         {
             if (mapCache == null)
             {
-                PlacementMap map = new PlacementMap();
-                List<PlaceProps> placeProps = null;
-                var paths = PlacementPaths;
-                paths.ForEach(x =>
+                WowMapDictionary mapDict = new WowMapDictionary();
+                MapNames.ForEach(mapName =>
                 {
-                    var fileName = System.IO.Path.GetFileName(x);
-                    var raw = System.IO.File.ReadAllText(x);
-                    placeProps = ParseRows(raw);
-                    map[fileName] = placeProps;
+
+                    TilePlacementDictionary map = new TilePlacementDictionary();
+
+                    List<PlaceProps> placeProps = null; 
+                    //basepath+mapname 경로에있는 파일들을 가져옴
+                    var tileRaws = (new System.IO.DirectoryInfo(BASE_PATH + mapName))
+                    .GetFiles("*.csv")
+                    .Where(x => x.Name.Split('.')[0]
+                    .EndsWith("ModelPlacementInformation"))
+                    .Select(x => "Assets" + x.FullName
+                    .Substring(Application.dataPath.Length)).ToList();
+
+                // 파일 raw 순회
+                    tileRaws.ForEach(x =>
+                {
+                            var fileName = System.IO.Path.GetFileName(x);
+                            var raw = System.IO.File.ReadAllText(x);
+                            placeProps = ParseRows(raw);
+                            map[fileName] = placeProps;
+                        });
+                    mapDict[mapName] = map; 
                 });
-                mapCache =  map;
+
+                mapCache = mapDict;
             }
             return mapCache;
         }
-    }
+    } 
 
-    const string BASE_PATH = "Assets/wow/maps/";
-    static List<string> FindAllPlacementPaths()
-    {
-        var dirInfo = new DirectoryInfo(BASE_PATH);
-        var files = dirInfo.GetFiles("*.csv", SearchOption.AllDirectories).Where(x =>
-        {
-            return x.Name.Split('.')[0].EndsWith("ModelPlacementInformation") == true;
-        });
-        var paths = files.ToList().Select(x => "Assets" + x.FullName.Substring(Application.dataPath.Length));
-        return paths.ToList();
-    }
+     
 
     static List<PlaceProps> ParseRows(string raw)
     {
