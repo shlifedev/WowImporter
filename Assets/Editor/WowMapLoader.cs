@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using UnityEngine; 
+using UnityEngine;
 public class WowMapLoader
-{ 
+{
     public class PlaceProps
     {
         public string ModelFile;
@@ -14,18 +14,27 @@ public class WowMapLoader
         public string FileDataId;
         public int DoodadIndexes;
         public int DoodadSetName;
-    } 
-    public class TilePlacementDictionary : Dictionary<string, List<PlaceProps>> { }
-    public class WowMapDictionary : Dictionary<string, TilePlacementDictionary>{ }
-   
+    }
+    public class TilePlacementDictionary : Dictionary<string, List<PlaceProps>> {
+        public List<PlaceProps> GetAllPlaceProps()
+        {
+            List<PlaceProps> props = new List<PlaceProps>();
+            this.Values.ToList().ForEach(x => props.AddRange(x));
+            return props;
+        }
+    }
+    public class WowMapDictionary : Dictionary<string, TilePlacementDictionary> { }
+
+    /**
+     *  와우 좌표계
+     */
+
+
     const int WOW_MAX_SIZE = 51200 / 3;
     const int MAP_SIZE = WOW_MAX_SIZE * 2;
-    const int ADT_SIZE = WOW_MAX_SIZE / 6; 
+    const int ADT_SIZE = WOW_MAX_SIZE / 6;
     const string BASE_PATH = "Assets/wow/maps/";
-
-
-    static DirectoryInfo Dir => new DirectoryInfo(BASE_PATH); 
-
+    static DirectoryInfo Dir => new DirectoryInfo(BASE_PATH);
     static List<string> MapNames
     {
         get
@@ -33,7 +42,6 @@ public class WowMapLoader
             return Dir.GetDirectories().Select(x => x.Name).ToList();
         }
     }
-    public static List<string> TileNames => WowMap.Keys.ToList();
     private static WowMapDictionary mapCache;
     public static WowMapDictionary WowMap
     {
@@ -47,7 +55,7 @@ public class WowMapLoader
 
                     TilePlacementDictionary map = new TilePlacementDictionary();
 
-                    List<PlaceProps> placeProps = null; 
+                    List<PlaceProps> placeProps = null;
                     //basepath+mapname 경로에있는 파일들을 가져옴
                     var tileRaws = (new System.IO.DirectoryInfo(BASE_PATH + mapName))
                     .GetFiles("*.csv")
@@ -56,24 +64,27 @@ public class WowMapLoader
                     .Select(x => "Assets" + x.FullName
                     .Substring(Application.dataPath.Length)).ToList();
 
-                // 파일 raw 순회
+                    // 파일 raw 순회
                     tileRaws.ForEach(x =>
                 {
-                            var fileName = System.IO.Path.GetFileName(x);
-                            var raw = System.IO.File.ReadAllText(x);
-                            placeProps = ParseRows(raw);
-                            map[fileName] = placeProps;
-                        });
-                    mapDict[mapName] = map; 
+                    var fileName = System.IO.Path.GetFileName(x);
+                    var raw = System.IO.File.ReadAllText(x);
+                    placeProps = ParseRows(raw);
+                    map[fileName] = placeProps;
+                });
+                    mapDict[mapName] = map;
                 });
 
                 mapCache = mapDict;
             }
             return mapCache;
         }
-    } 
+    }
 
-     
+    public static TilePlacementDictionary GetMapData(string mapName) => WowMap[mapName];
+    
+
+
 
     static List<PlaceProps> ParseRows(string raw)
     {
